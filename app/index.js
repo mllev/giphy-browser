@@ -25,7 +25,8 @@ class Page extends React.Component {
       loading: false,
       search: undefined,
       offset: 0,
-      show_modal: false
+      show_modal: false,
+      num_columns: 4
     }
   }
 
@@ -67,6 +68,18 @@ class Page extends React.Component {
     })
   }
 
+  adjustWidth () {
+    if (window.innerWidth <= 440) {
+      this.setState({ num_columns: 1 })
+    } else if (window.innerWidth <= 660) {
+      this.setState({ num_columns: 2 })
+    } else if (window.innerWidth <= 880) {
+      this.setState({ num_columns: 3 })
+    } else {
+      this.setState({ num_columns: 4 })
+    }
+  }
+
   componentDidMount () {
     this.loadGIFs(undefined)
 
@@ -87,25 +100,37 @@ class Page extends React.Component {
         this.loadGIFs(this.state.search)
       }
     })
+
+    window.addEventListener('resize', () => {
+      this.adjustWidth()
+    })
+
+    this.adjustWidth()
   }
 
 
   render () {
     let key = 0
     let index = 0
-    let columns = [[],[],[]]
+    let columns = []
+    const max = this.state.num_columns
+
+    for (let i = 0; i < max; i++) {
+      columns.push([])
+    }
 
     // evenly distribute gifs across three columns
     // so images can be evenly spaced apart
     this.state.gifs.forEach(gif => {
       columns[index].push(gif)
-      index = index === 2 ? 0 : index + 1
+      index = index === (max - 1) ? 0 : index + 1
     })
 
     return <div className='main-container'>
       {this.state.show_modal && <div className='modal' onClick={() => {
         this.setState({ show_modal: false })
       }}><img src={this.state.gif_url} /></div>}
+      <h2>GIPHY BROWSER</h2>
       <input className='search' placeholder='SEARCH FOR GIFS' />
       {!this.state.gifs.length && <p className='message'>NO RESULTS</p>}
       <div className='gif-container'>
